@@ -1,0 +1,49 @@
+name: Generate and Commit Excel
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+    # Grant write permission to commit/push changes
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v3
+        with:
+          # Ensures the default token is not left in local git config
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.19'
+
+      - name: Build
+        run: go build -o hormones main.go
+
+      - name: Run the generator
+        run: ./hormones
+
+      - name: Commit changes
+        run: |
+          # Set git user for the commit
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Stage the Excel file
+          git add HormonesSchedule.xlsx
+          
+          # Only commit if there are changes (git status --porcelain is non-empty)
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "Update HormonesSchedule.xlsx"
+            # Push changes to the same branch
+            git push origin HEAD:${GITHUB_REF}
+          else
+            echo "No changes to commit."
+          fi
