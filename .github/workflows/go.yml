@@ -37,7 +37,7 @@ jobs:
           git config user.email "lenags@gmail.com"
           
           # Stage the Excel file
-          git add HormonesSchedule.xlsx
+          git add HormonesSchedule1.xlsx
           
           # Only commit if there are changes (git status --porcelain is non-empty)
           if [ -n "$(git status --porcelain)" ]; then
