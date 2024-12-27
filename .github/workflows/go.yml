@@ -1,49 +1,82 @@
-name: Generate and Commit Excel
+name: Dispatch and commit
 
 on:
-  push:
+  # Runs when a pull request targets the "main" branch
+  pull_request:
     branches:
       - main
+  
+  # Allows manual triggering from the "Actions" tab or via the GitHub API
+  workflow_dispatch:
+    inputs:
+      startDay:
+        description: "Start day in YYYY-MM-DD format"
+        required: true
+        default: "2024-12-26"
 
 jobs:
-  build-and-run:
+  build-run-commit:
     runs-on: ubuntu-latest
     # Grant write permission to commit/push changes
     permissions:
       contents: write
-
     steps:
-      - name: Check out the repository
+      - name: Check out the pull request's source branch
         uses: actions/checkout@v3
         with:
-          # Ensures the default token is not left in local git config
+          # This checks out the PR HEAD branch instead of the merge ref
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          
+          # To allow pushing commits back, you must fetch the full history:
           persist-credentials: true
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: '1.23'
+          go-version: "1.23"  # or your preferred version
 
-      - name: Build
-        run: go build -o hormones hrtfunct.go
+      - name: Build program
+        run: go build -o out hrtfunct.go
+        # If your Go file is named differently or in a subfolder, adjust accordingly:
+        # e.g., run: go build -o out ./cmd/myapp
 
-      - name: Run the generator
-        run: ./hormones
-
-      - name: Commit changes
+      - name: Run program
+        if: ${{ github.event_name == 'workflow_dispatch' }} # Only run with user-provided input
         run: |
-          # Set git user for the commit
-          git config user.name "yelenagou"
-          git config user.email "lenags@gmail.com"
+          # Use the 'startDay' input from the workflow_dispatch event
+          ./out --start-day=${{ github.event.inputs.startDay }}
+
+      - name: Run program (PR trigger)
+        if: ${{ github.event_name == 'pull_request' }} # Only run on pull_request
+        run: |
+          # Provide a default or derived date for PR triggers, or fetch from somewhere
+          # For demo, we’ll use a fixed date or the default from code
+          ./out --start-day=2024-12-26
+
+      - name: Commit and push changes
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request' }}
+        run: |
+          # Only commit if HormonesSchedule.xlsx actually changed
+          git config user.name "github-actions"
+          git config user.email "[email protected]"
           
-          # Stage the Excel file
-          git add HormonesSchedule1.xlsx
+          # Stage only the spreadsheet file (or anything else you want to commit)
+          git add HormonesSchedule.xlsx
           
-          # Only commit if there are changes (git status --porcelain is non-empty)
+          # Commit changes; if there are no changes, '|| echo' avoids a fatal error
+          
+          
+          # For a PR, you can either push back to the branch (if you have write permissions)
+          # or skip pushing if you just want to build the file for verification.
           if [ -n "$(git status --porcelain)" ]; then
-            git commit -m "Update HormonesSchedule.xlsx"
+            git commit -m "Auto-generated Excel for date: ${{ github.event.inputs.startDay }}" || echo "No changes to commit"
             # Push changes to the same branch
-            git push origin HEAD:${GITHUB_REF}
+            git push origin HEAD:${{ github.event.pull_request.head.ref }}
           else
             echo "No changes to commit."
           fi
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
