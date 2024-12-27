@@ -21,6 +21,9 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
+        with:
+          # Ensures the default token is not left in local git config
+          persist-credentials: true
 
       - name: Set up Go
         uses: actions/setup-go@v3
