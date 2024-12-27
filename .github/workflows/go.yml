@@ -1,4 +1,4 @@
-name: Generate Excel and Commit
+name: Dispatch and commit
 
 on:
   # Runs when a pull request targets the "main" branch
