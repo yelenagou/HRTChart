@@ -28,7 +28,7 @@ jobs:
           go-version: "1.23"  # or your preferred version
 
       - name: Build program
-        run: go build -o out main.go
+        run: go build -o out hrtfunct.go
         # If your Go file is named differently or in a subfolder, adjust accordingly:
         # e.g., run: go build -o out ./cmd/myapp
 
