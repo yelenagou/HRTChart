@@ -1,10 +1,12 @@
 name: Generate and Commit Excel
 
 on:
-  push:
-    branches:
-      - main
-
+  workflow_dispatch:
+    inputs:
+      startDay:
+        description: "Start day in YYYY-MM-DD format"
+        required: true
+        default: "2024-12-26"
 jobs:
   build-and-run:
     runs-on: ubuntu-latest
@@ -28,22 +30,16 @@ jobs:
         run: go build -o hormones hrtfunct.go
 
       - name: Run the generator
-        run: ./hormones
+        run: |
+           # Use the 'startDay' input from the workflow_dispatch event
+           ./hormones --start-day=${{ github.event.inputs.startDay }}
 
       - name: Commit changes
         run: |
-          # Set git user for the commit
-          git config user.name "yelenagou"
-          git config user.email "lenags@gmail.com"
-          
-          # Stage the Excel file
-          git add HormonesSchedule1.xlsx
-          
-          # Only commit if there are changes (git status --porcelain is non-empty)
-          if [ -n "$(git status --porcelain)" ]; then
-            git commit -m "Update HormonesSchedule.xlsx"
-            # Push changes to the same branch
-            git push origin HEAD:${GITHUB_REF}
-          else
-            echo "No changes to commit."
-          fi
+          git config user.name "github-actions"
+          git config user.email "[email protected]"
+          # Stage only the spreadsheet file (or anything else you want to commit)
+          git add HormonesSchedule.xlsx
+          # Commit changes; if there are no changes, '|| echo' avoids a fatal error
+          git commit -m "Auto-generated Excel for date: ${{ github.event.inputs.startDay }}" || echo "No changes to commit"
+          git push
