@@ -73,7 +73,7 @@ jobs:
           if [ -n "$(git status --porcelain)" ]; then
             git commit -m "Auto-generated Excel for date: ${{ github.event.inputs.startDay }}" || echo "No changes to commit"
             # Push changes to the same branch
-            git push origin HEAD:${{ github.event.pull_request.head.ref }}
+            git push origin HEAD:${GITHUB_REF}
           else
             echo "No changes to commit."
           fi
