@@ -115,8 +115,32 @@ func main() {
 			amountText = "4\n6\n3"
 		case day == 15:
 			amountText = "5\n6\n4"
-			// NOTE: The code had two cases for day == 15; adjust or remove as needed.
-			// If you keep the second case day==15, it’ll overwrite amountText.
+		case day == 16:
+			amountText = "5\n10\n3"
+		case day == 17:
+			amountText = "5\n10\n2"
+		case day == 18:
+			amountText = "6\n12\n1"
+		case day == 19:
+			amountText = "6\n12\n1"
+		case day == 20:
+			amountText = "6\n14\n1"
+		case day == 21:
+			amountText = "6\n16\n1"
+		case day == 22:
+			amountText = "6\n14\n1"
+		case day == 23:
+			amountText = "6\n12\n1"
+		case day == 24:
+			amountText = "6\n12\n1"
+		case day == 25:
+			amountText = "6\n10\n1"
+		case day == 26:
+			amountText = "6\n10\n1"
+		case day == 27:
+			amountText = "6\n6\n1"
+		case day == 28:
+			amountText = "6\n6\n1"
 		default:
 			amountText = ""
 		}
