@@ -21,11 +21,16 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Check out repository
+      - name: Check out the pull request's source branch
         uses: actions/checkout@v3
         with:
-          # Ensures the default token is not left in local git config
+          # This checks out the PR HEAD branch instead of the merge ref
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          
+          # To allow pushing commits back, you must fetch the full history:
           persist-credentials: true
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v3
@@ -68,7 +73,7 @@ jobs:
           if [ -n "$(git status --porcelain)" ]; then
             git commit -m "Auto-generated Excel for date: ${{ github.event.inputs.startDay }}" || echo "No changes to commit"
             # Push changes to the same branch
-            git push origin HEAD:${GITHUB_REF}
+            git push origin HEAD:${{ github.event.pull_request.head.ref }}
           else
             echo "No changes to commit."
           fi
