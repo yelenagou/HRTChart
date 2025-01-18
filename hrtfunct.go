@@ -11,9 +11,7 @@ import (
 
 func main() {
 	// 1. Parse the "start-day" flag from the command line
-	startDayStr := flag.String("start-day", "2024-01-01", "Specify the start day in YYYY-MM-DD format")
-	fileNameStr := flag.String("file-name", "hrtschedule.xlsx", "Enter file name and format")
-	flag.Parse()
+	startDayStr, fileNameStr := getUserInput()
 	var fullFileName = fmt.Sprintf("%s%s.%s", *fileNameStr, *startDayStr, "xlsx")
 
 	// 2. Convert the provided string into a time.Time object
@@ -181,4 +179,16 @@ func main() {
 	}
 
 	log.Printf("Spreadsheet generated successfully: %s", fullFileName)
+}
+
+func getUserInput() (*string, *string) {
+	now := time.Now()
+
+	// Format the date (e.g., "2006-01-02")
+	today := now.Format("2006-01-02")
+
+	startDayStr := flag.String("start-day", today, "Specify the start day in YYYY-MM-DD format")
+	fileNameStr := flag.String("file-name", "hrtschedule", "Enter file name and format")
+	flag.Parse()
+	return startDayStr, fileNameStr
 }
