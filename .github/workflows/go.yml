@@ -67,19 +67,19 @@ jobs:
           git config user.email "[email protected]"
           
           # Stage only the spreadsheet file (or anything else you want to commit)
-          #git add HormonesSchedule.xlsx
+          git add '*.xlsx'
           
           # Commit changes; if there are no changes, '|| echo' avoids a fatal error
           
           
           # For a PR, you can either push back to the branch (if you have write permissions)
           # or skip pushing if you just want to build the file for verification.
-          if [ -n "$(git status --porcelain)" ]; then
-            git commit -m "Auto-generated Excel for date: ${{ github.event.inputs.startDay }} and filename ${{ github.event.inputs.fileName}}" || echo "No changes to commit"
-            # Push changes to the same branch
-            git push origin HEAD:${GITHUB_REF}
+          if [ -n "$(git status --porcelain '*.xlsx')" ]; then
+            git commit -m "Update xlsx files"
+            git push
+            echo "Committed and pushed updated/new .xlsx files."
           else
-            echo "No changes to commit."
+            echo "No new or modified .xlsx files to commit."
           fi
           git push
         env:
