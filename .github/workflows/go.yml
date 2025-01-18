@@ -50,7 +50,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' }} # Only run with user-provided input
         run: |
           # Use the 'startDay' input from the workflow_dispatch event
-          ./out --start-day=${{ github.event.inputs.startDay }} --fileName=${{ github.event.inputs.fileName}}
+          ./out --start-day=${{ github.event.inputs.startDay }} --file-name=${{ github.event.inputs.fileName}}
 
       - name: Run program (PR trigger)
         if: ${{ github.event_name == 'pull_request' }} # Only run on pull_request
@@ -67,7 +67,7 @@ jobs:
           git config user.email "[email protected]"
           
           # Stage only the spreadsheet file (or anything else you want to commit)
-          git add HormonesSchedule.xlsx
+          git add ${{ github.event.inputs.fileName }}${{ github.event.inputs.startDay}}.xlsx
           
           # Commit changes; if there are no changes, '|| echo' avoids a fatal error
           
