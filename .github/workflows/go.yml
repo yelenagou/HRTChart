@@ -13,6 +13,10 @@ on:
         description: "Start day in YYYY-MM-DD format"
         required: true
         default: "2024-12-26"
+      fileName:
+        description: "Enter File Name"
+        required: false
+        default: "HRTSchedule"
 
 jobs:
   build-run-commit:
@@ -46,14 +50,14 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' }} # Only run with user-provided input
         run: |
           # Use the 'startDay' input from the workflow_dispatch event
-          ./out --start-day=${{ github.event.inputs.startDay }}
+          ./out --start-day=${{ github.event.inputs.startDay }} --fileName=${{ github.event.inputs.fileName}}
 
       - name: Run program (PR trigger)
         if: ${{ github.event_name == 'pull_request' }} # Only run on pull_request
         run: |
           # Provide a default or derived date for PR triggers, or fetch from somewhere
           # For demo, we’ll use a fixed date or the default from code
-          ./out --start-day=2024-12-26
+          ./out --start-day=2024-12-26 --file-name=hrtschedule
 
       - name: Commit and push changes
         if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request' }}
@@ -71,7 +75,7 @@ jobs:
           # For a PR, you can either push back to the branch (if you have write permissions)
           # or skip pushing if you just want to build the file for verification.
           if [ -n "$(git status --porcelain)" ]; then
-            git commit -m "Auto-generated Excel for date: ${{ github.event.inputs.startDay }}" || echo "No changes to commit"
+            git commit -m "Auto-generated Excel for date: ${{ github.event.inputs.startDay }} and filename ${{ github.event.inputs.fileName}}" || echo "No changes to commit"
             # Push changes to the same branch
             git push origin HEAD:${GITHUB_REF}
           else

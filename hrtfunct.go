@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"time"
 
@@ -11,7 +12,9 @@ import (
 func main() {
 	// 1. Parse the "start-day" flag from the command line
 	startDayStr := flag.String("start-day", "2024-01-01", "Specify the start day in YYYY-MM-DD format")
+	fileNameStr := flag.String("file-name", "hrtschedule.xlsx", "Enter file name and format")
 	flag.Parse()
+	var fullFileName = fmt.Sprintf("%s%s.%s", *fileNameStr, *startDayStr, "xlsx")
 
 	// 2. Convert the provided string into a time.Time object
 	startDate, err := time.Parse("2006-01-02", *startDayStr)
@@ -173,9 +176,9 @@ func main() {
 	f.SetActiveSheet(sheetIndex)
 
 	// Save the file
-	if err := f.SaveAs("HormonesSchedule.xlsx"); err != nil {
+	if err := f.SaveAs(fullFileName); err != nil {
 		log.Fatalf("failed to save file: %v", err)
 	}
 
-	log.Println("Spreadsheet generated successfully: HormonesSchedule.xlsx")
+	log.Printf("Spreadsheet generated successfully: %s", fullFileName)
 }
