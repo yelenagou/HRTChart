@@ -5,4 +5,4 @@
 ## HRTChart
 
 - Tracking HRT
-run: `go run hrtfunct.go --start-day=yyyy-mm-dd`
+run: `go run hrtfunct.go --start-day=yyyy-mm-dd --file-name=filename`
