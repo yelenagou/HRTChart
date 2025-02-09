@@ -1,6 +1,8 @@
 package main
 
 import (
+	"HrtChart/calendardata"
+	"HrtChart/reportutil"
 	"flag"
 	"fmt"
 	"log"
@@ -102,51 +104,11 @@ func main() {
 
 		// D) Amount
 		amountCell, _ := excelize.CoordinatesToCellName(4, row)
+
 		var amountText string
-		switch {
-		case day >= 1 && day <= 5:
-			amountText = "6\n\n1"
-		case day >= 6 && day <= 8:
-			amountText = "8\n\n1"
-		case day >= 9 && day <= 11:
-			amountText = "9\n\n1"
-		case day == 12:
-			amountText = "10\n\n1"
-		case day == 13:
-			amountText = "4\n\n2"
-		case day == 14:
-			amountText = "4\n6\n3"
-		case day == 15:
-			amountText = "5\n6\n4"
-		case day == 16:
-			amountText = "5\n10\n3"
-		case day == 17:
-			amountText = "5\n10\n2"
-		case day == 18:
-			amountText = "6\n12\n1"
-		case day == 19:
-			amountText = "6\n12\n1"
-		case day == 20:
-			amountText = "6\n14\n1"
-		case day == 21:
-			amountText = "6\n16\n1"
-		case day == 22:
-			amountText = "6\n14\n1"
-		case day == 23:
-			amountText = "6\n12\n1"
-		case day == 24:
-			amountText = "6\n12\n1"
-		case day == 25:
-			amountText = "6\n10\n1"
-		case day == 26:
-			amountText = "6\n10\n1"
-		case day == 27:
-			amountText = "6\n6\n1"
-		case day == 28:
-			amountText = "6\n6\n1"
-		default:
-			amountText = ""
-		}
+
+		amountText = calendardata.GetAmountText(day)
+
 		if err := f.SetCellValue(sheetName, amountCell, amountText); err != nil {
 			log.Fatalf("failed to set Amount: %v", err)
 		}
@@ -181,4 +143,5 @@ func main() {
 	}
 
 	log.Printf("Spreadsheet generated successfully: %s", fullFileName)
+	reportutil.CreateHormonesDoc(*fileNameStr, startDate)
 }
