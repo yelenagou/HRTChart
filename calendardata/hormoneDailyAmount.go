@@ -26,8 +26,36 @@ var dayRanges = []dayRange{
 	{27, 28, "6\n6\n1"},
 }
 
+var dayRangesDoc = []dayRange{
+	{1, 5, "\x20\x206 \x20\n\t1"},
+	{6, 8, "\x20\x208 \x20\n\t1"},
+	{9, 11, "\x20\x209\r\x20\t1"},
+	{12, 12, "\x20\x2010\n\n\t1"},
+	{13, 13, "\x20\x204\r\n\t2"},
+	{14, 14, "\x20\x204\r\t6\n\t3"},
+	{15, 15, "\x20\x205\r\t6\n\t4"},
+	{16, 16, "\x20\x205\r\t10\n\t3"},
+	{17, 17, "\x20\x205\r\t10\n\t2"},
+	{18, 19, "\x20\x206\r\t12\n\t1"},
+	{20, 20, "\x20\x206\r\t14\n\t1"},
+	{21, 21, "\x20\x206\r\t16\n\t1"},
+	{22, 22, "\x20\x206\r\t14\n\t1"},
+	{23, 24, "\x20\x206\r\t12\n\t1"},
+	{25, 26, "\x20\x206\r\t10\n\t1"},
+	{27, 28, "\x20\x206\r\t6\n\t1"},
+}
+
 func GetAmountText(day int) string {
 	for _, dr := range dayRanges {
+		if day >= dr.start && day <= dr.end {
+			return dr.text
+		}
+	}
+	// Default if no range matches
+	return ""
+}
+func GetAmountTextDoc(day int) string {
+	for _, dr := range dayRangesDoc {
 		if day >= dr.start && day <= dr.end {
 			return dr.text
 		}

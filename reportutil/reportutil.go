@@ -3,12 +3,18 @@ package reportutil
 import (
 	"HrtChart/calendardata"
 	"fmt"
+	"log"
+	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"baliance.com/gooxml/color"
 	"baliance.com/gooxml/document"
 	"baliance.com/gooxml/schema/soo/wml"
+	"github.com/joho/godotenv"
 	"github.com/xuri/excelize/v2"
+	"gopkg.in/gomail.v2"
 )
 
 // CreateHormonesSpreadsheet generates an Excel file with 5 columns:
@@ -94,6 +100,11 @@ func CreateHormonesSpreadsheet(filename string, startDate time.Time) error {
 // Day, Date, Hormones (multiline), Amount, and Notes.
 // The days go from 1 to 28, and the "Date" is calculated from startDate for each day.
 func CreateHormonesDoc(filename string, startDate time.Time) error {
+	// Ensure the filename ends with .doc
+	if !strings.HasSuffix(filename, ".doc") {
+		filename += ".doc"
+	}
+
 	// Create a new document
 	doc := document.New()
 
@@ -106,67 +117,66 @@ func CreateHormonesDoc(filename string, startDate time.Time) error {
 	// Add a table and create a row for headers
 	table := doc.AddTable()
 
-	table.Properties().Borders().SetBottom(
-		wml.ST_BorderSingle, // border style
-		color.Black,         // border color
-		1,                   // border size
-	)
-	table.Properties().Borders().SetInsideHorizontal(
-		wml.ST_BorderBasicBlackDots, // border style
-		color.Green,                 // border color
-		1,                           // border size
-	)
-	table.Properties().Borders().SetInsideVertical(
-		wml.ST_BorderSingle, // border style
-		color.Black,         // border color
-		1,                   // border size
-	)
+	table.Properties().Borders().SetBottom(wml.ST_BorderSingle, color.Black, 2)
+	table.Properties().Borders().SetInsideHorizontal(wml.ST_BorderBasicBlackDots, color.Green, 1)
+	table.Properties().Borders().SetInsideVertical(wml.ST_BorderSingle, color.Black, 1)
 	table.Properties().SetCellSpacingAuto()
+
 	headerRow := table.AddRow()
 
-	// Our headers
+	// Headers
 	headerCells := []string{"Day", "Date", "Hormones", "Amount", "Notes"}
 	for _, header := range headerCells {
 		cell := headerRow.AddCell()
 		cell.AddParagraph().AddRun().AddText(header)
 	}
 
-	// Generate 28 rows
+	// ✅ Add actual data rows
 	for day := 1; day <= 28; day++ {
 		row := table.AddRow()
-		
-		amountText := calendardata.GetAmountText(day)
-		
+		amountText := calendardata.GetAmountTextDoc(day)
 
 		// Day
-		cellDay := row.AddCell()
-		cellDay.AddParagraph().AddRun().AddText(fmt.Sprintf("%d", day))
+		row.AddCell().AddParagraph().AddRun().AddText(fmt.Sprintf("%d", day))
 
-		// Date: startDate + (day-1)
+		// Date
 		dateValue := startDate.AddDate(0, 0, day-1).Format("2006-01-02")
-		cellDate := row.AddCell()
-		cellDate.AddParagraph().AddRun().AddText(dateValue)
+		row.AddCell().AddParagraph().AddRun().AddText("\t" + dateValue)
 
 		// Hormones
-		cellHormones := row.AddCell()
-		cellHormones.AddParagraph().AddRun().AddText("Estrogen")
-		cellHormones.AddParagraph().AddRun().AddText("Progesterone")
-		cellHormones.AddParagraph().AddRun().AddText("Testosterone")
+		hormoneCell := row.AddCell()
+		hormoneCell.AddParagraph().AddRun().AddText("\x20\x20Estrogen")
+		hormoneCell.AddParagraph().AddRun().AddText("\x20\x20Progesterone")
+		hormoneCell.AddParagraph().AddRun().AddText("\x20\x20Testosterone")
 
 		// Amount
-
-		cellAmount := row.AddCell()
-		cellAmount.AddParagraph().AddRun().AddText(amountText)
+		row.AddCell().AddParagraph().AddRun().AddText(amountText)
 
 		// Notes
-		cellNotes := row.AddCell()
-		cellNotes.AddParagraph().AddRun().AddText("")
+		row.AddCell().AddParagraph().AddRun().AddText("")
 	}
 
-	// Save the document
 	if err := doc.SaveToFile(filename); err != nil {
 		return fmt.Errorf("failed to save Word document %q: %w", filename, err)
 	}
+
+	// ✅ Get the absolute file path
+	absPath, err := filepath.Abs(filename)
+	if err != nil {
+		return fmt.Errorf("failed to determine absolute path for %q: %w", filename, err)
+	}
+
+	// ✅ Ensure the file is fully written and is not empty
+	if err := verifyFileIsReady(absPath); err != nil {
+		return err
+	}
+
+	// ✅ Send the document via email after ensuring it's fully saved
+	if err := sendEmailWithAttachment(absPath, "lenags@gmail.com"); err != nil {
+		return fmt.Errorf("failed to send email: %w", err)
+	}
+
+	fmt.Println("File successfully created and sent:", absPath)
 	return nil
 }
 
@@ -174,4 +184,55 @@ func CreateHormonesDoc(filename string, startDate time.Time) error {
 // This simple version covers columns A–Z only.
 func columnName(index int) string {
 	return string('A' + rune(index))
+}
+
+// ✅ Helper function to verify the file is ready before sending
+func verifyFileIsReady(filename string) error {
+	// Ensure file exists
+	fileInfo, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return fmt.Errorf("file %q does not exist, document saving failed", filename)
+	}
+
+	// Ensure file is not empty
+	if fileInfo.Size() == 0 {
+		return fmt.Errorf("file %q is empty, document writing failed", filename)
+	}
+
+	// Ensure file is accessible (try opening it)
+	file, err := os.Open(filename)
+	if err != nil {
+		return fmt.Errorf("file %q is still locked or not closed properly: %w", filename, err)
+	}
+	defer file.Close()
+
+	return nil
+}
+func sendEmailWithAttachment(filename, recipient string) error {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	// Email settings
+	smtpHost := "smtp.gmail.com"                   // Replace with your SMTP server
+	smtpPort := 587                                // Replace with your SMTP port
+	senderEmail := "lenags@gmail.com"              // Your email
+	senderPassword := os.Getenv("SENDER_PASSWORD") // Your email password
+
+	m := gomail.NewMessage()
+	m.SetHeader("From", senderEmail)
+	m.SetHeader("To", recipient)
+	m.SetHeader("Subject", "Hormone Tracking Document")
+	m.SetBody("text/plain", "Attached is your hormone tracking document.")
+	m.Attach(filename)
+
+	d := gomail.NewDialer(smtpHost, smtpPort, senderEmail, senderPassword)
+
+	// Send email
+	if err := d.DialAndSend(m); err != nil {
+		return fmt.Errorf("failed to send email: %w", err)
+	}
+
+	fmt.Println("Email sent successfully to", recipient)
+	return nil
 }
