@@ -83,15 +83,15 @@ func main() {
 		hormoneCell, _ := excelize.CoordinatesToCellName(3, row)
 		hormoneRuns := []excelize.RichTextRun{
 			{
-				Text: "Estrogen",
+				Text: "\x20Estrogen",
 				Font: &excelize.Font{Color: "#008000"}, // green
 			},
 			{
-				Text: "\nProgesterone",
+				Text: "\x20Progesterone",
 				Font: &excelize.Font{Color: "#FFA500"}, // orange
 			},
 			{
-				Text: "\nTestosterone",
+				Text: "\x20STestosterone",
 				Font: &excelize.Font{Color: "#A020F0"}, // purple
 			},
 		}

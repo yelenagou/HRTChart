@@ -2,8 +2,8 @@ package reportutil
 
 import (
 	"HrtChart/calendardata"
+
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -12,9 +12,7 @@ import (
 	"baliance.com/gooxml/color"
 	"baliance.com/gooxml/document"
 	"baliance.com/gooxml/schema/soo/wml"
-	"github.com/joho/godotenv"
 	"github.com/xuri/excelize/v2"
-	"gopkg.in/gomail.v2"
 )
 
 // CreateHormonesSpreadsheet generates an Excel file with 5 columns:
@@ -101,8 +99,8 @@ func CreateHormonesSpreadsheet(filename string, startDate time.Time) error {
 // The days go from 1 to 28, and the "Date" is calculated from startDate for each day.
 func CreateHormonesDoc(filename string, startDate time.Time) error {
 	// Ensure the filename ends with .doc
-	if !strings.HasSuffix(filename, ".doc") {
-		filename += ".doc"
+	if !strings.HasSuffix(filename, ".docx") {
+		filename += ".docx"
 	}
 
 	// Create a new document
@@ -172,9 +170,9 @@ func CreateHormonesDoc(filename string, startDate time.Time) error {
 	}
 
 	// ✅ Send the document via email after ensuring it's fully saved
-	if err := sendEmailWithAttachment(absPath, "lenags@gmail.com"); err != nil {
-		return fmt.Errorf("failed to send email: %w", err)
-	}
+	// if err := SendEmailWithAttachment(absPath, "lenags@gmail.com"); err != nil {
+	// 	return fmt.Errorf("failed to send email: %w", err)
+	// }
 
 	fmt.Println("File successfully created and sent:", absPath)
 	return nil
@@ -206,33 +204,5 @@ func verifyFileIsReady(filename string) error {
 	}
 	defer file.Close()
 
-	return nil
-}
-func sendEmailWithAttachment(filename, recipient string) error {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-	// Email settings
-	smtpHost := "smtp.gmail.com"                   // Replace with your SMTP server
-	smtpPort := 587                                // Replace with your SMTP port
-	senderEmail := "lenags@gmail.com"              // Your email
-	senderPassword := os.Getenv("SENDER_PASSWORD") // Your email password
-
-	m := gomail.NewMessage()
-	m.SetHeader("From", senderEmail)
-	m.SetHeader("To", recipient)
-	m.SetHeader("Subject", "Hormone Tracking Document")
-	m.SetBody("text/plain", "Attached is your hormone tracking document.")
-	m.Attach(filename)
-
-	d := gomail.NewDialer(smtpHost, smtpPort, senderEmail, senderPassword)
-
-	// Send email
-	if err := d.DialAndSend(m); err != nil {
-		return fmt.Errorf("failed to send email: %w", err)
-	}
-
-	fmt.Println("Email sent successfully to", recipient)
 	return nil
 }

@@ -4,6 +4,7 @@
 # Binaries for programs and plugins
 *.exe
 *.doc
+*.docx
 *.exe~
 *.dll
 *.so
