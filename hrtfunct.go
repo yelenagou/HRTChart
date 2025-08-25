@@ -6,6 +6,8 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/xuri/excelize/v2"
@@ -14,9 +16,12 @@ import (
 func main() {
 	// 1. Parse the "start-day" flag from the command line
 	startDayStr := flag.String("start-day", "2024-01-01", "Specify the start day in YYYY-MM-DD format")
-	fileNameStr := flag.String("file-name", "hrtschedule.xlsx", "Enter file name and format")
+	fileNameStr := flag.String("file-name", "hrtschedule", "Base name for the output file")
 	flag.Parse()
-	var fullFileName = fmt.Sprintf("%s%s.%s", *fileNameStr, *startDayStr, "xlsx")
+
+	// Ensure we don't duplicate file extensions if the user supplied one
+	baseName := strings.TrimSuffix(*fileNameStr, filepath.Ext(*fileNameStr))
+	fullFileName := fmt.Sprintf("%s%s.xlsx", baseName, *startDayStr)
 
 	// 2. Convert the provided string into a time.Time object
 	startDate, err := time.Parse("2006-01-02", *startDayStr)
