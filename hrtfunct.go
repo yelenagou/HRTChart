@@ -12,17 +12,37 @@ import (
 )
 
 func main() {
-	// 1. Parse the "start-day" flag from the command line
-	startDayStr := flag.String("start-day", "2024-01-01", "Specify the start day in YYYY-MM-DD format")
+	// 1. Parse optional date flags from the command line
+	startDayStr := flag.String("start-day", "", "Optional start day in YYYY-MM-DD format (defaults to today)")
+	endDayStr := flag.String("end-day", "", "Optional end day in YYYY-MM-DD format (defaults to start day + 27 days)")
 	fileNameStr := flag.String("file-name", "hrtschedule.xlsx", "Enter file name and format")
 	flag.Parse()
-	var fullFileName = fmt.Sprintf("%s%s.%s", *fileNameStr, *startDayStr, "xlsx")
 
-	// 2. Convert the provided string into a time.Time object
-	startDate, err := time.Parse("2006-01-02", *startDayStr)
-	if err != nil {
-		log.Fatalf("Invalid start day format: %v", err)
+	now := time.Now()
+	startDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	if *startDayStr != "" {
+		parsedStartDate, err := time.Parse("2006-01-02", *startDayStr)
+		if err != nil {
+			log.Fatalf("invalid start day format: %v", err)
+		}
+		startDate = parsedStartDate
 	}
+
+	endDate := startDate.AddDate(0, 0, 27)
+	if *endDayStr != "" {
+		parsedEndDate, err := time.Parse("2006-01-02", *endDayStr)
+		if err != nil {
+			log.Fatalf("invalid end day format: %v", err)
+		}
+		endDate = parsedEndDate
+	}
+	if endDate.Before(startDate) {
+		log.Fatalf("invalid date range: end day (%s) cannot be before start day (%s)", endDate.Format("2006-01-02"), startDate.Format("2006-01-02"))
+	}
+
+	totalDays := int(endDate.Sub(startDate).Hours()/24) + 1
+
+	var fullFileName = fmt.Sprintf("%s%s.%s", *fileNameStr, startDate.Format("2006-01-02"), "xlsx")
 
 	// Create a new Excel file
 	f := excelize.NewFile()
@@ -62,8 +82,8 @@ func main() {
 		},
 	})
 
-	// 3. Generate rows for Days 1..28, using the user-provided start date
-	for day := 1; day <= 28; day++ {
+	// 3. Generate rows for the date range.
+	for day := 1; day <= totalDays; day++ {
 		row := day + 1 // row 2..29 in the sheet
 
 		// A) Day
@@ -143,5 +163,5 @@ func main() {
 	}
 
 	log.Printf("Spreadsheet generated successfully: %s", fullFileName)
-	reportutil.CreateHormonesDoc(*fileNameStr, startDate)
+	reportutil.CreateHormonesDoc(*fileNameStr, startDate, totalDays)
 }

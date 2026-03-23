@@ -97,7 +97,7 @@ func CreateHormonesSpreadsheet(filename string, startDate time.Time) error {
 // CreateHormonesDoc generates a Word document (DOCX) with 5 columns:
 // Day, Date, Hormones (multiline), Amount, and Notes.
 // The days go from 1 to 28, and the "Date" is calculated from startDate for each day.
-func CreateHormonesDoc(filename string, startDate time.Time) error {
+func CreateHormonesDoc(filename string, startDate time.Time, totalDays int) error {
 	// Ensure the filename ends with .doc
 	if !strings.HasSuffix(filename, ".docx") {
 		filename += ".docx"
@@ -130,7 +130,7 @@ func CreateHormonesDoc(filename string, startDate time.Time) error {
 	}
 
 	// ✅ Add actual data rows
-	for day := 1; day <= 28; day++ {
+	for day := 1; day <= totalDays; day++ {
 		row := table.AddRow()
 		amountText := calendardata.GetAmountTextDoc(day)
 
