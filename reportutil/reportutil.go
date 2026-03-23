@@ -146,7 +146,7 @@ func CreateHormonesDoc(filename string, startDate time.Time) error {
 		hormoneCell.AddParagraph().AddRun().AddText("\x20\x20Estrogen")
 		hormoneCell.AddParagraph().AddRun().AddText("\x20\x20Progesterone")
 		hormoneCell.AddParagraph().AddRun().AddText("\x20\x20Testosterone")
-
+		hormoneCell.AddParagraph().AddRun().AddText("\x20\x20Pregnenalol")
 		// Amount
 		row.AddCell().AddParagraph().AddRun().AddText(amountText)
 
