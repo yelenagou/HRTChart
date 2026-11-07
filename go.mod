@@ -1,4 +1,4 @@
-module HrtChart
+module HRTChart
 
 go 1.23.4
 
