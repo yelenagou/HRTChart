@@ -1,7 +1,7 @@
 package reportutil
 
 import (
-	"HrtChart/calendardata"
+	"HRTChart/calendardata"
 
 	"fmt"
 	"os"

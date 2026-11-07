@@ -57,7 +57,8 @@ func GetAmountText(day int) string {
 func GetAmountTextDoc(day int) string {
 	for _, dr := range dayRangesDoc {
 		if day >= dr.start && day <= dr.end {
-			return dr.text
+			// Pregnenalol is the fourth hormone and has amount 1 every day.
+			return dr.text + "\x20\x2001"
 		}
 	}
 	// Default if no range matches

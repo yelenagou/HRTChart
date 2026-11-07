@@ -1,8 +1,8 @@
 package main
 
 import (
-	"HrtChart/calendardata"
-	"HrtChart/reportutil"
+	"HRTChart/calendardata"
+	"HRTChart/reportutil"
 	"flag"
 	"fmt"
 	"log"
@@ -143,5 +143,7 @@ func main() {
 	}
 
 	log.Printf("Spreadsheet generated successfully: %s", fullFileName)
-	reportutil.CreateHormonesDoc(*fileNameStr, startDate)
+	if err := reportutil.CreateHormonesDoc(*fileNameStr, startDate); err != nil {
+		log.Fatalf("failed to generate Word document: %v", err)
+	}
 }
